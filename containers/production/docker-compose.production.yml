@@ -1,0 +1,20 @@
+version:              '2'
+services:
+  db:
+    image:   postgres
+    volumes:
+      - /var/lib/postgresql/data:/var/lib/postgresql/data
+  web:
+    build:
+      context:    ../../
+      dockerfile: containers/production/rails/Dockerfile
+    env_file:         rails/envirovents/.env
+    command:          containers/production/rails/puma/entrypoint
+    volumes:
+      - .:/capistrano_dockerized_rails_app
+      - /etc/nginx/sites-available/:/etc/nginx/sites-available/
+      - /etc/nginx/sites-enabled/:/etc/nginx/sites-enabled/
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db

@@ -1,0 +1,35 @@
+pipeline {
+    agent {
+        docker {
+          image 'ruby:2.5.1'
+          args '-u root'
+        }
+    }
+    stages {
+        stage('Clone repository') {
+          steps {
+            checkout scm
+            withCredentials([file(credentialsId: 'jenkins_ssh', variable: 'FILE')]) {
+
+              sh 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+              sh 'eval $(ssh-agent -s)'
+              sh 'mkdir -p  /tmp/.ssh && cd /tmp/.ssh && cp $FILE /tmp/.ssh/id_rsa && chmod 400 id_rsa'
+              // sh 'ssh-add /tmp/id_rsa'
+            }
+
+
+            // sh 'ssh -i /tmp/.ssh/id_rsa root@159.89.111.209'
+
+            sh 'gem install bundler && bundle install -r5 -j20 --without production test'
+            sh 'cap production deploy'
+
+          }
+        }
+
+        stage('Test') {
+            steps {
+                sh 'node --version'
+            }
+        }
+    }
+}

@@ -1,0 +1,13 @@
+#!/bin/bash
+set -e
+
+bundle exec rake db:create
+bundle exec rake db:migrate
+bundle exec rake assets:precompile
+bundle exec puma -C config/puma.rb
+rm -rf /etc/nginx/sites-available/capistrano_dockerized_rails_app.conf
+cp containers/production/rails/nginx/default.conf /etc/nginx/sites-available/capistrano_dockerized_rails_app.conf
+rm -rf /etc/nginx/sites-available/capistrano_dockerized_rails_app.conf
+ln -s /etc/nginx/sites-available/capistrano_dockerized_rails_app.conf /etc/nginx/sites-enabled/capistrano_dockerized_rails_app.conf
+
+exec "$@"
